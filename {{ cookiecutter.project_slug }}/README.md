@@ -2,7 +2,7 @@
 
 This repository was generated from `cookiecutter-go-agent-quality`.
 
-It is intentionally opinionated: agents are not allowed to call work complete until the quality gate passes.
+It is intentionally opinionated: agents are not allowed to call work complete until the repository proves it.
 
 ## What this gives you
 
@@ -13,6 +13,8 @@ It is intentionally opinionated: agents are not allowed to call work complete un
 - GitHub Actions quality gate
 - Agent instruction files for Copilot, Cursor, Claude, Windsurf, Hermes, and generic `AGENTS.md`
 - Optional mutation testing through Gremlins
+- Agent finalization contract through `make agent-finalize`
+- Project-specific acceptance check hook at `scripts/check-acceptance.sh`
 
 ## First run
 
@@ -20,6 +22,7 @@ It is intentionally opinionated: agents are not allowed to call work complete un
 go mod tidy
 make install-tools
 make quality-fast
+make agent-finalize
 ```
 
 ## Common commands
@@ -32,17 +35,26 @@ make coverage        # coverage gate against ./internal/...
 make mutation        # gremlins against domain/service
 make quality-fast    # fmt + lint + coverage
 make quality-full    # fmt + lint + coverage + mutation
+make agent-finalize  # required final proof before an agent says done
 ```
 
 ## Quality contract
 
-The agent must run `make quality-fast` before saying done.
-
-If domain or service logic changes, the agent must also run:
+The agent must run this before saying done:
 
 ```bash
-RUN_MUTATION_TESTS=true make quality-full
+make agent-finalize
 ```
+
+The finalizer runs `make quality-fast`, automatically requires mutation testing when `internal/domain` or `internal/service` changed, runs `scripts/check-acceptance.sh` when present, and emits `.agent/final-report.md` plus `.agent/done.json`.
+
+If domain or service logic changes, mutation can also be forced manually with:
+
+```bash
+AGENT_REQUIRE_MUTATION=true make agent-finalize
+```
+
+If user-facing behavior changes, update `scripts/check-acceptance.sh` with smoke tests for the CLI, HTTP route, config path, or integration behavior.
 
 ## Architecture rules
 
@@ -69,4 +81,5 @@ scripts/
 .cursor/rules/
 .hermes/SOUL.md
 AGENTS.md
+.agent/                  # local finalization artifacts; ignored by git
 ```

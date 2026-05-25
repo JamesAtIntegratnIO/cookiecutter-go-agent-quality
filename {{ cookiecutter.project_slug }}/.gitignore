@@ -13,3 +13,6 @@ coverage.html
 # Environment
 .env
 .env.*
+
+# Local agent completion artifacts
+.agent/

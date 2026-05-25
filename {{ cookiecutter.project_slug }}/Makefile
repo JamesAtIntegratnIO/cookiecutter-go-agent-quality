@@ -2,7 +2,7 @@ SHELL := /usr/bin/env bash
 COVERAGE_THRESHOLD ?= {{ cookiecutter.coverage_threshold }}
 RUN_MUTATION_TESTS ?= {{ cookiecutter.enable_mutation_testing }}
 
-.PHONY: help install-tools fmt lint test coverage mutation quality-fast quality-full clean
+.PHONY: help install-tools fmt lint test coverage mutation quality-fast quality-full agent-finalize clean
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "%-18s %s\n", $$1, $$2}'
@@ -38,5 +38,9 @@ quality-full: fmt lint coverage ## Full gate with optional mutation testing
 		echo "mutation tests skipped; set RUN_MUTATION_TESTS=true to enable"; \
 	fi
 
+agent-finalize: ## Prove the agent completion contract and emit .agent/final-report.md
+	./scripts/agent-finalize.sh
+
 clean: ## Clean generated quality artifacts
 	rm -f coverage.out coverage.html
+	rm -rf .agent
