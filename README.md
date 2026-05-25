@@ -6,7 +6,7 @@ This template is opinionated around one core rule:
 
 > The agent is not done until the repo proves it is done.
 
-Generated projects include Go scaffolding, linting, coverage enforcement, architecture boundary tests, mutation testing support, GitHub Actions, and agent instruction files for tools like GitHub Copilot, Claude, Cursor, Windsurf, and Hermes.
+Generated projects include Go scaffolding, linting, coverage enforcement, architecture boundary tests, mutation testing support, GitHub Actions, agent instruction files, and a finalization contract that forces agents to prove completion before claiming success.
 
 ## What this template creates
 
@@ -24,6 +24,8 @@ Generated repositories include:
 │   ├── service/
 │   └── transport/
 ├── scripts/
+│   ├── agent-finalize.sh
+│   ├── check-acceptance.sh
 │   ├── check-coverage.sh
 │   └── quality.sh
 ├── .github/
@@ -58,6 +60,8 @@ The generated project includes:
 - optional mutation testing with `gremlins`
 - GitHub Actions CI
 - agent instruction files that tell coding agents exactly how to work in the repo
+- `make agent-finalize`, which emits `.agent/final-report.md` and `.agent/done.json` only after required gates pass
+- `scripts/check-acceptance.sh`, a project-specific hook for smoke tests that prove user-facing behavior
 
 ## Prerequisites
 
@@ -108,6 +112,7 @@ cd go-agent-quality-service
 go mod tidy
 make install-tools
 make quality-fast
+make agent-finalize
 ```
 
 ## Using this template after pushing it to GitHub
@@ -146,6 +151,7 @@ cd <generated-project>
 go mod tidy
 make install-tools
 make quality-fast
+make agent-finalize
 git init
 git add .
 git commit -m "Initial Go service scaffold"
@@ -167,13 +173,11 @@ Read AGENTS.md, .github/copilot-instructions.md, and the README before making ch
 
 Before saying a task is complete, run:
 
-make quality-fast
+make agent-finalize
 
-If domain or service logic changed, also run:
-
-RUN_MUTATION_TESTS=true make quality-full
-
-Do not weaken lint rules, coverage thresholds, or architecture tests without explicit approval.
+If the command fails, report the failing command and relevant output.
+If the command passes, include the contents of .agent/final-report.md.
+Do not weaken lint rules, coverage thresholds, architecture tests, or finalization rules without explicit approval.
 ```
 
 The generated repo includes agent instruction files for:
@@ -225,7 +229,13 @@ Runs the normal local quality gate.
 make quality-full
 ```
 
-Runs the full quality gate, including mutation testing.
+Runs the full quality gate, including mutation testing when `RUN_MUTATION_TESTS=true`.
+
+```bash
+make agent-finalize
+```
+
+Runs the agent completion contract. It executes the fast gate, runs mutation testing when domain/service changes are detected, runs acceptance checks when configured, and writes `.agent/final-report.md` plus `.agent/done.json`.
 
 ## Suggested local development loop
 
@@ -238,10 +248,31 @@ make quality-fast
 For significant domain/service changes:
 
 ```bash
-RUN_MUTATION_TESTS=true make quality-full
+AGENT_REQUIRE_MUTATION=true make agent-finalize
+```
+
+Before an agent claims completion:
+
+```bash
+make agent-finalize
 ```
 
 Use mutation testing selectively. It is valuable, but it can be slow on larger packages.
+
+## Acceptance checks
+
+The generated `scripts/check-acceptance.sh` starts as a placeholder. Update it whenever the task changes user-facing behavior.
+
+Good candidates for acceptance checks include:
+
+- CLI flags and command output
+- HTTP route behavior
+- health checks
+- request/response contract checks
+- config parsing
+- mocked external integration behavior
+
+This prevents a common AI failure mode: unit tests and coverage pass, but the feature does not work the way the user asked.
 
 ## CI behavior
 
@@ -279,6 +310,7 @@ Then enter the generated repo and run:
 go mod tidy
 make install-tools
 make quality-fast
+make agent-finalize
 ```
 
 If the generated project fails quality checks, fix the template before pushing.
@@ -292,6 +324,7 @@ cookiecutter . --no-input
 cd <generated-project>
 go mod tidy
 make quality-fast
+make agent-finalize
 ```
 
 Also verify:
@@ -304,6 +337,8 @@ Also verify:
 - coverage threshold is achievable
 - architecture tests pass
 - lint config matches the installed `golangci-lint` major version
+- `make agent-finalize` emits `.agent/final-report.md`
+- `scripts/check-acceptance.sh` exists and is ready to customize
 
 ## Why this exists
 
@@ -316,6 +351,8 @@ This template makes the repo enforce the standard:
 - linting catches maintainability problems
 - architecture tests protect package boundaries
 - mutation testing checks whether tests actually fail when behavior changes
+- acceptance checks prove user-facing behavior
+- agent finalization creates a completion artifact instead of trusting the agent's summary
 - agent instructions make the workflow explicit
 
 The goal is not to slow down development. The goal is to prevent “vibe-coded” software from reaching `main` without objective proof that it works.

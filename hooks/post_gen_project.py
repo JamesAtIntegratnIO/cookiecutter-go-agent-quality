@@ -4,6 +4,8 @@ import os
 scripts = [
     Path("scripts/check-coverage.sh"),
     Path("scripts/quality.sh"),
+    Path("scripts/agent-finalize.sh"),
+    Path("scripts/check-acceptance.sh"),
 ]
 
 for script in scripts:
@@ -15,3 +17,4 @@ print("Next steps:")
 print("  go mod tidy")
 print("  make install-tools")
 print("  make quality-fast")
+print("  make agent-finalize")

@@ -8,13 +8,13 @@ alwaysApply: true
 Before claiming a task is complete, run:
 
 ```bash
-make quality-fast
+make agent-finalize
 ```
 
-For changes to domain or service logic, also run:
+If the command fails, do not summarize success. Report the failing command and relevant output.
 
-```bash
-RUN_MUTATION_TESTS=true make quality-full
-```
+When adding user-facing behavior, update `scripts/check-acceptance.sh` with smoke tests for the requested CLI, HTTP, config, or integration behavior.
+
+Prefer small patches. After a failed patch, read the file before trying again. Do not hand-roll CLI parsing unless explicitly required; use Go's standard `flag` package or Cobra.
 
 Never weaken quality gates or add meaningless tests to satisfy coverage. Keep domain and service packages free from framework leakage.
