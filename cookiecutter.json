@@ -1,0 +1,19 @@
+{
+  "project_name": "Go Agent Quality Service",
+  "project_slug": "go-agent-quality-service",
+  "module_path": "github.com/jamesatintegratnio/go-agent-quality-service",
+  "package_name": "qualityservice",
+  "binary_name": "quality-service",
+  "go_version": "1.23",
+  "coverage_threshold": "80",
+  "enable_mutation_testing": [
+    "false",
+    "true"
+  ],
+  "author_name": "James D",
+  "license": [
+    "MIT",
+    "Apache-2.0",
+    "Proprietary"
+  ]
+}

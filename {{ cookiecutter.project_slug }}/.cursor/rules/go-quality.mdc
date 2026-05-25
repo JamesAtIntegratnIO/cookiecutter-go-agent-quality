@@ -1,0 +1,20 @@
+---
+description: Go agent quality gate and repository conventions
+alwaysApply: true
+---
+
+# Go Quality Gate
+
+Before claiming a task is complete, run:
+
+```bash
+make quality-fast
+```
+
+For changes to domain or service logic, also run:
+
+```bash
+RUN_MUTATION_TESTS=true make quality-full
+```
+
+Never weaken quality gates or add meaningless tests to satisfy coverage. Keep domain and service packages free from framework leakage.

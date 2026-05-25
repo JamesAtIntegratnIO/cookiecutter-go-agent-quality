@@ -1,0 +1,138 @@
+version: "2"
+
+run:
+  tests: true
+
+linters:
+  default: none
+  enable:
+    - bodyclose
+    - containedctx
+    - contextcheck
+    - copyloopvar
+    - depguard
+    - dogsled
+    - errcheck
+    - errorlint
+    - exhaustive
+    - funlen
+    - gocognit
+    - gocritic
+    - gocyclo
+    - gosec
+    - govet
+    - ineffassign
+    - interfacebloat
+    - maintidx
+    - misspell
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnil
+    - noctx
+    - nolintlint
+    - nonamedreturns
+    - revive
+    - staticcheck
+    - unconvert
+    - unparam
+    - unused
+    - whitespace
+
+  settings:
+    depguard:
+      rules:
+        domain-clean:
+          files:
+            - "**/internal/domain/**"
+          deny:
+            - pkg: "net/http"
+              desc: "domain must not know about HTTP"
+            - pkg: "database/sql"
+              desc: "domain must not know about SQL"
+            - pkg: "github.com/gin-gonic/gin"
+              desc: "domain must not know about transport framework"
+            - pkg: "github.com/labstack/echo"
+              desc: "domain must not know about transport framework"
+            - pkg: "github.com/gofiber/fiber/v2"
+              desc: "domain must not know about transport framework"
+        service-clean:
+          files:
+            - "**/internal/service/**"
+          deny:
+            - pkg: "github.com/gin-gonic/gin"
+              desc: "services must not depend on HTTP framework"
+            - pkg: "github.com/labstack/echo"
+              desc: "services must not depend on HTTP framework"
+            - pkg: "github.com/gofiber/fiber/v2"
+              desc: "services must not depend on HTTP framework"
+
+    dogsled:
+      max-blank-identifiers: 2
+
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+
+    funlen:
+      lines: 60
+      statements: 40
+      ignore-comments: true
+
+    gocognit:
+      min-complexity: 15
+
+    gocyclo:
+      min-complexity: 10
+
+    interfacebloat:
+      max: 5
+
+    maintidx:
+      under: 20
+
+    nakedret:
+      max-func-lines: 0
+
+    nestif:
+      min-complexity: 4
+
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+      allow-unused: false
+
+    revive:
+      severity: warning
+      rules:
+        - name: cognitive-complexity
+          arguments: [15]
+        - name: cyclomatic
+          arguments: [10]
+        - name: function-length
+          arguments: [40, 60]
+        - name: argument-limit
+          arguments: [5]
+        - name: error-return
+        - name: error-strings
+        - name: exported
+          disabled: true
+
+  exclusions:
+    warn-unused: true
+    rules:
+      - path: "_test\\.go"
+        linters:
+          - funlen
+          - gocognit
+          - gocyclo
+          - maintidx
+          - gosec
+      - path: "cmd/"
+        linters:
+          - funlen
+          - gocognit
+
+formatters:
+  enable:
+    - gofmt

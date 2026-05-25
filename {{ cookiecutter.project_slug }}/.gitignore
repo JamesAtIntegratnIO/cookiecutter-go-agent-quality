@@ -1,0 +1,15 @@
+# Go
+/bin/
+/dist/
+*.test
+coverage.out
+coverage.html
+
+# Editor
+.idea/
+.vscode/
+.DS_Store
+
+# Environment
+.env
+.env.*
